@@ -30,5 +30,5 @@ class CartDetails(db.Model):
     cart_product_id = db.Column(
         db.String, ForeignKey("products.product_id"), nullable=False
     )
-    cart_price = db.Column(db.String, nullable=False)
-    cart_quantity = db.Column(db.String, nullable=False)
+    cart_price = db.Column(db.Float, nullable=False)
+    cart_quantity = db.Column(db.Integer, nullable=False)

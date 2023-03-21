@@ -106,7 +106,7 @@ def deletefromcart(id, cart):
                 True,
             )
         cart = Cart.query.filter_by(cart_id=id).first()
-        cart.cart_amount = cart.cart_amount - cart_details.cart_price
+        cart.cart_amount = round(cart.cart_amount - cart_details.cart_price, 2)
         if cart.cart_amount == 0:
             db.session.delete(cart)
         db.session.delete(cart_details)
@@ -122,17 +122,21 @@ def deletefromcart(id, cart):
 
 def addtocartdetail(cart_id, product):
     try:
-        product_price = (
-            Product.query.filter_by(product_id=product.product_id).first().product_price
-        )
+        prod = Product.query.filter_by(product_id=product.product_id).first()
+        product_price = prod.product_price
         cart = Cart.query.filter_by(cart_id=cart_id).first()
         cart_detail = CartDetails.query.filter_by(
             cart_id=cart_id, cart_product_id=product.product_id
         ).first()
+        tax_rate = round(1 + (prod.product_tax / 100), 2)
         if cart_detail:
             cart_detail.cart_quantity = 1 + cart_detail.cart_quantity
-            cart_detail.cart_price = product_price * cart_detail.cart_quantity
-            cart.cart_amount = cart.cart_amount + (product_price * 1)
+            cart_detail.cart_price = round(
+                product_price * cart_detail.cart_quantity * tax_rate, 2
+            )
+            cart.cart_amount = round(
+                cart.cart_amount + (product_price * 1 * tax_rate), 2
+            )
             db.session.commit()
             return (
                 {"message": "Product Already added to Cart quantity increased by 1"},
@@ -145,15 +149,16 @@ def addtocartdetail(cart_id, product):
             detail_id=count_details + 1,
             cart_id=cart_id,
             cart_product_id=product.product_id,
-            cart_price=float(product_price * product.quantity),
+            cart_price=round(float(product_price * product.quantity * tax_rate), 2),
             cart_quantity=product.quantity,
         )
-        new_cart_amount = product_price * product.quantity
+        new_cart_amount = round(product_price * product.quantity * tax_rate, 2)
+
         if cart:
             cart_amount = cart.cart_amount + new_cart_amount
         else:
             cart_amount = new_cart_amount
-        cart.cart_amount = cart_amount
+        cart.cart_amount = round(cart_amount, 2)
         db.session.add(data)
         db.session.commit()
         return ({"message": "Product added to cart"}, True)
