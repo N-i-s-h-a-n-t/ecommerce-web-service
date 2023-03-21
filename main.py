@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restx import Api, Resource, Namespace
 from dao import db
-from view import user_api, cart_api, product_api
+from view import user_api, cart_api, product_api, checkout_api
 
 app = Flask(__name__)
 api = Api(
@@ -30,6 +30,7 @@ api.add_namespace(post_api)
 api.add_namespace(user_api)
 api.add_namespace(cart_api)
 api.add_namespace(product_api)
+api.add_namespace(checkout_api)
 
 if __name__ == "__main__":
     app.run()

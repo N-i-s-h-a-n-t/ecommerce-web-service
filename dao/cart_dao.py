@@ -108,11 +108,9 @@ def updatecart(user_id, cart):
             Product.query.filter_by(product_id=cart.product_id).first().product_price
         )
         cart_data = Cart.query.filter_by(cart_id=cart_id).first()
-        cartdetails.cart_quantity = cartdetails.cart_quantity + cart.quantity
-        cartdetails.cart_price = cartdetails.cart_price + (
-            product_price * cart.quantity
-        )
-        cart_data.cart_amount = cart_data.cart_amount + (product_price * cart.quantity)
+        cartdetails.cart_quantity = cart.quantity
+        cartdetails.cart_price = product_price * cartdetails.cart_quantity
+        cart_data.cart_amount = cart_data.cart_amount + cartdetails.cart_price
         db.session.commit()
         return ({"message": "Product updated in cart successfully"}, True)
     except SQLAlchemyError as e:

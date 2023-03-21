@@ -8,3 +8,4 @@ from .cart_service import (
     check_product,
     create_cart,
 )
+from .checkout_service import checkout_cart

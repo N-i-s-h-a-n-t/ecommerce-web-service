@@ -7,4 +7,14 @@ class Product(db.Model):
     product_name = db.Column(db.String(40), nullable=False)
     product_image = db.Column(db.LargeBinary, nullable=False)
     product_price = db.Column(db.String(64), nullable=False)
+    product_quantity = db.Column(db.Integer)
     product_detail = db.relationship("CartDetails", backref="products", lazy=True)
+
+    def __repr__(self):
+        return {
+            "product_id": self.product_id,
+            "product_name": self.product_name,
+            "product_image": self.product_image,
+            "product_price": self.product_price,
+            "product_quantity": self.product_quantity,
+        }
