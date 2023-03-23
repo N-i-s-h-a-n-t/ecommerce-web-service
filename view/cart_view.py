@@ -16,7 +16,7 @@ cart = api.model(
 )
 
 
-@api.route("/<int:user_id>")
+@api.route("/view/<int:user_id>")
 class CartList(Resource):
     @api.doc(
         responses={
@@ -40,7 +40,7 @@ class CartList(Resource):
             elif res == "no":
                 return ({"message": "Sorry, User with this id does not exist"}, 200)
 
-            return marshal(res, cart), 200
+            return res, 200
         else:
             return (
                 {"message": "Server Error please try again later", "error": res},

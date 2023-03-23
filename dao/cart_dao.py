@@ -19,11 +19,32 @@ def get_cart(id):
         if status:
             if res == "no":
                 return (res, True)
-            cart = Cart.query.filter_by(cart_user_id=id).first()
-            if cart:
-                return (cart, True)
-            else:
-                return ("None", True)
+            res, status = check_cart(id)
+            if status:
+                if res is None:
+                    return ({"message": "Cart does not exist for the user"}, True)
+                cart = res
+                cartdetails = CartDetails.query.filter_by(cart_id=cart).all()
+                lis = []
+                for cartdetail in cartdetails:
+                    product_list = {}
+                    product_list[cartdetail.products.product_name] = {
+                        "product_name": cartdetail.products.product_name,
+                        "product_price": cartdetail.products.product_price,
+                        "product_quantity": cartdetail.cart_quantity,
+                        "product_total-price": cartdetail.cart_price,
+                    }
+                    lis.append(product_list)
+                if len(lis):
+                    return (
+                        {
+                            "CartDetails": lis,
+                            "total_cart_price": cartdetail.cart.cart_amount,
+                        },
+                        True,
+                    )
+                else:
+                    return ("None", True)
         return (res, False)
     except SQLAlchemyError as e:
         error = str(e.__dict__["orig"])
