@@ -1,5 +1,4 @@
 from models import Product, db
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -23,7 +22,7 @@ def add_product(product):
     if status:
         try:
             new_product = Product(
-                product_id="PR" + str(res + 1),
+                product_id="PD" + str(res + 1),
                 product_name=product.product_name,
                 product_image=bytes(product.product_image, encoding="utf-8"),
                 product_price=product.product_price,

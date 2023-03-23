@@ -1,4 +1,4 @@
-from . import Cart, CartDetails, db, HistoryDetails, History
+from . import Cart, CartDetails, db, HistoryDetails, History, Product
 from sqlalchemy.exc import SQLAlchemyError
 from service import check_cart
 
@@ -71,6 +71,25 @@ def purchase_history_detail(cart_id, id):
         return (error, True)
 
 
+"""This method will update the inventory"""
+
+
+def update_inventory(products):
+    try:
+        for product in products:
+            product_model = Product.query.filter_by(
+                product_id=product.cart_product_id
+            ).first()
+            product_model.product_quantity = (
+                product_model.product_quantity - product.cart_quantity
+            )
+        db.session.commit()
+        return ({"message": "Inventory updated succesfully"}, True)
+    except SQLAlchemyError as e:
+        error = e.__dict__["orig"]
+        return (error, False)
+
+
 """Returns the appropriate result whether the user can checkout or not"""
 
 
@@ -107,6 +126,9 @@ def checkout_cart(user_id):
                 result, status_1 = update_checkout(cart)
                 if not status_1:
                     return ({"message": "server Error", "error": result}, True)
+                res_1, status_1 = update_inventory(products)
+                if not status_1:
+                    return {"message": "Server Error", "error": res_1}
                 return (res, True)
             else:
                 return (res, False)
