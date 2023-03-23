@@ -32,3 +32,12 @@ class CartDetails(db.Model):
     )
     cart_price = db.Column(db.Float, nullable=False)
     cart_quantity = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self):
+        return {
+            "detail_id": self.detail_id,
+            "cart_id": self.cart_id,
+            "cart_product_id": self.cart_product_id,
+            "cart_price": self.cart_price,
+            "cart_quantity": self.cart_quantity,
+        }

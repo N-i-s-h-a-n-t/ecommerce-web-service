@@ -1,5 +1,5 @@
 from flask_restx import Resource, Namespace, fields, reqparse, marshal
-from dao import get_users, add_user
+from dao import get_users, add_user, purchase_history_of_user, check_user
 
 api = Namespace("users", description="User Operations")
 
@@ -67,6 +67,40 @@ class AddUser(Resource):
         res, status = add_user(args)
         if status:
             return ({"messasge": res}, 201)
+        else:
+            return (
+                {"message": "Server Error please try again later", "error": res},
+                500,
+            )
+
+
+@api.route("/purchase_history/<int:user_id>")
+class PurchaseHistory(Resource):
+    @api.doc(
+        responses={
+            200: "success",
+            201: "Created",
+            204: "No Content",
+            400: "Bad Request",
+            404: "Not Found",
+            500: "Internal Server Error",
+        },
+        description="This API will show last 5 purchase history detail for user",
+        params={"user_id": "ID of a user"},
+    )
+    def get(self, user_id):
+        res, status = check_user(user_id)
+        if status:
+            if res == "no":
+                return ({"message": "User does not exist"}, 200)
+        else:
+            return (
+                {"message": "Server Error please try again later", "error": res},
+                500,
+            )
+        res, status = purchase_history_of_user(user_id)
+        if status:
+            return (res, 200)
         else:
             return (
                 {"message": "Server Error please try again later", "error": res},

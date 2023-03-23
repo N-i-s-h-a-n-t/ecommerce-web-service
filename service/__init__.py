@@ -1,4 +1,4 @@
-from models import Product, Cart, CartDetails, User
+from models import Product, Cart, CartDetails, User, History, HistoryDetails
 from dao import db
 from .cart_service import (
     check_cart,

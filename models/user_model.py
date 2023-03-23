@@ -8,8 +8,9 @@ class User(db.Model):
     user_password = db.Column(db.String(128), nullable=False)
     user_email = db.Column(db.String(64), nullable=False)
     shop_cart = db.relationship("Cart", backref="users", lazy=True)
+    product_history = db.relationship("History", backref="users", lazy=True)
 
-    def serialize(self):
+    def __repr__(self):
         return {
             "user_id": self.user_id,
             "user_name": self.user_name,

@@ -153,7 +153,6 @@ def addtocartdetail(cart_id, product):
             cart_quantity=product.quantity,
         )
         new_cart_amount = round(product_price * product.quantity * tax_rate, 2)
-
         if cart:
             cart_amount = cart.cart_amount + new_cart_amount
         else:

@@ -1,6 +1,74 @@
-from . import Cart, CartDetails
+from . import Cart, CartDetails, db, HistoryDetails, History
 from sqlalchemy.exc import SQLAlchemyError
 from service import check_cart
+
+
+"""This method will change the status of cart"""
+
+
+def update_checkout(cart):
+    try:
+        cart.checkout_status = "ok"
+        db.session.commit()
+        return ("ok", True)
+    except SQLAlchemyError as e:
+        error = e.__dict__["orig"]
+        return (error, False)
+
+
+"""This method will fill the fields for purchase history table"""
+
+
+def purchase_history(status, cart):
+    try:
+        count = History.query.count()
+        cart = Cart.query.filter_by(
+            cart_user_id=cart.cart_user_id, checkout_status=status
+        ).first()
+        history_id = count + 1
+        if cart:
+            data_purchase_history = History(
+                history_id=history_id,
+                user_id=cart.cart_user_id,
+                total_price=cart.cart_amount,
+            )
+            db.session.add(data_purchase_history)
+            db.session.commit()
+            res, status = purchase_history_detail(cart.cart_id, history_id)
+            if status:
+                return (res, True)
+            else:
+                return (res, False)
+        else:
+            return ({"message": "Cart Does not exist"}, True)
+    except SQLAlchemyError as e:
+        error = e.__dict__["orig"]
+        return (error, False)
+
+
+"""This method will add the fields for product history detail table"""
+
+
+def purchase_history_detail(cart_id, id):
+    try:
+        cart_details = CartDetails.query.filter_by(cart_id=cart_id).all()
+        for cart_detail in cart_details:
+            detail_count = HistoryDetails.query.count()
+            data_purchase_history_details = HistoryDetails(
+                history_detail_id=detail_count + 1,
+                product_id=cart_detail.cart_product_id,
+                product_name=cart_detail.products.product_name,
+                product_quantity=cart_detail.cart_quantity,
+                product_price=cart_detail.products.product_price,
+                product_total_price=cart_detail.cart_price,
+                history_id=id,
+            )
+            db.session.add(data_purchase_history_details)
+        db.session.commit()
+        return ({"message": "Order Placed "}, True)
+    except SQLAlchemyError as e:
+        error = e.__dict__["orig"]
+        return (error, True)
 
 
 """Returns the appropriate result whether the user can checkout or not"""
@@ -14,11 +82,8 @@ def checkout_cart(user_id):
                 return ({"message": "No Cart for the user"}, True)
         else:
             return (check, status)
-        cart_id = (
-            Cart.query.filter_by(cart_user_id=user_id, checkout_status="no")
-            .first()
-            .cart_id
-        )
+        cart = Cart.query.filter_by(cart_user_id=user_id, checkout_status="no").first()
+        cart_id = cart.cart_id
         products = CartDetails.query.filter_by(cart_id=cart_id).all()
         lis = {}
         for product in products:
@@ -37,7 +102,14 @@ def checkout_cart(user_id):
         if lis:
             return (lis, True)
         else:
-            return ({"message": "You can place order"}, True)
+            res, status = purchase_history(cart.checkout_status, cart)
+            if status:
+                result, status_1 = update_checkout(cart)
+                if not status_1:
+                    return ({"message": "server Error", "error": result}, True)
+                return (res, True)
+            else:
+                return (res, False)
     except SQLAlchemyError as e:
         error = e.__dict__["orig"]
         return (error, False)
